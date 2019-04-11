@@ -1,0 +1,51 @@
+By: Emil Hemdal <heemil@student.chalmers.se>
+When: 2019-01-20
+
+Run `awk '/^--BEGIN MAKEFILE--$/{flag=1;next}/^--END MAKEFILE--$/{flag=0}flag' install.log > Makefile`
+to get an Makefile that does the work for you (after you configure it).
+
+Run the Makefile with make to build lolcat
+
+Modify bin/lolcat with the following around `require 'rubygems'`
+
+"""
+ENV['GEM_PATH']="#{ENV['GEM_PATH']}:/chalmers/sw/sup64/ruby-2.5.1/lib/ruby/gems/2.5.0"
+require 'rubygems'
+Gem.clear_paths
+"""
+
+Then create and configure vcs_config.sup
+
+--BEGIN MAKEFILE--
+# By: Emil Hemdal <heemil@student.chalmers.se>
+# When: 2019-01-20
+
+sw              = lolcat
+version         = 99.9.20
+manpath         = share/man/man1
+rubygem         = /chalmers/sw/sup64/ruby-2.5.1/bin/gem
+
+destDir         = $(shell pwd)
+
+.PHONY: lolcat
+lolcat:
+        $(rubygem) install --install-dir /chalmers/sw/unsup64/$(sw)-$(version) $(sw)
+        # Fix man pages
+        mkdir -p $(manpath)
+        cp gems/$(sw)-$(version)/man/$(sw).6 $(manpath)/$(sw).1
+        # Fix permissions
+        find $(destDir) -type d -exec chmod 775 {} \;
+        find $(destDir) -type f -exec chmod 664 {} \;
+        chmod 775 $(destDir)/bin/*
+
+.PHONY: clean
+clean:
+        rm -Rf $(destDir)/bin
+        rm -Rf $(destDir)/build_info
+        rm -Rf $(destDir)/cache
+        rm -Rf $(destDir)/doc
+        rm -Rf $(destDir)/extensions
+        rm -Rf $(destDir)/gems
+        rm -Rf $(destDir)/man
+        rm -Rf $(destDir)/specifications
+--END MAKEFILE--

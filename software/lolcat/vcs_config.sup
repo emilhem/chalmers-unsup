@@ -1,0 +1,12 @@
+# Use man vcs-package to learn more about the format of this file
+
+#       pkg-id          installog
+ID      lolcat-99.9.20  install.log
+
+PREFIX  /chalmers/sw/unsup64/lolcat-99.9.20/
+
+# Binaries
+BIN     bin/lolcat      99.9.20 -99.0920        share/man/man1/lolcat.1         H
+
+# Files/folders required by opus to exist/function
+FILES           /chalmers/sw/unsup64/lolcat-99.9.20

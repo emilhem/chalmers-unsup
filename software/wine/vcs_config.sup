@@ -1,0 +1,40 @@
+# Use man vcs-package to learn more about the format of this file
+
+#       pkg-id          installog
+ID      wine-4.0        install.log
+
+PREFIX  /chalmers/sw/unsup64/wine-4.0/
+
+# Binaries
+BIN     bin/msiexec             4.0     4.0000          share/man/man1/msiexec.1                W
+BIN     bin/notepad             4.0     4.0000          share/man/man1/notepad.1                W
+BIN     bin/regedit             4.0     4.0000          share/man/man1/regedit.1                W
+BIN     bin/regsvr32            4.0     4.0000          share/man/man1/regsvr32.1               W
+BIN     bin/widl                4.0     4.0000          share/man/man1/widl.1                   W
+BIN     bin/wine                4.0     4.0000          share/man/man1/wine.1                   W
+BIN     bin/wine64              4.0     4.0000          share/man/man1/wine64.1                 W
+BIN     bin/wine64-preloader    4.0     4.0000          share/man/man1/wine64-preloader.1       W
+BIN     bin/wineboot            4.0     4.0000          share/man/man1/wineboot.1               W
+BIN     bin/winebuild           4.0     4.0000          share/man/man1/winebuild.1              W
+BIN     bin/winecfg             4.0     4.0000          share/man/man1/winecfg.1                W
+BIN     bin/wineconsole         4.0     4.0000          share/man/man1/wineconsole.1            W
+BIN     bin/winecpp             4.0     4.0000          share/man/man1/winecpp.1                W
+BIN     bin/winedbg             4.0     4.0000          share/man/man1/winedbg.1                W
+BIN     bin/winedump            4.0     4.0000          share/man/man1/winedump.1               W
+BIN     bin/winefile            4.0     4.0000          share/man/man1/winefile.1               W
+BIN     bin/wineg++             4.0     4.0000          share/man/man1/wineg++.1                W
+BIN     bin/winegcc             4.0     4.0000          share/man/man1/winegcc.1                W
+BIN     bin/winemaker           4.0     4.0000          share/man/man1/winemaker.1              W
+BIN     bin/winemine            4.0     4.0000          share/man/man1/winemine.1               W
+BIN     bin/winepath            4.0     4.0000          share/man/man1/winepath.1               W
+BIN     bin/wine-preloader      4.0     4.0000          share/man/man1/wine-preloader.1         W
+BIN     bin/wineserver          4.0     4.0000          share/man/man1/wineserver.1             W
+BIN     bin/wmc                 4.0     4.0000          share/man/man1/wmc.1                    W
+BIN     bin/wrc                 4.0     4.0000          share/man/man1/wrc.1                    W
+
+# Libraries
+# LIB   wine            4.0     4.0000          lib     include
+LIB     wine            4.0     4.0000          lib64   include
+
+# Files/folders required by opus to exist/function
+FILES           /chalmers/sw/unsup64/wine-4.0

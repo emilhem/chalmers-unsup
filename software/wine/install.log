@@ -1,0 +1,83 @@
+By: Emil Hemdal <heemil@student.chalmers.se>
+When: 2019-02-01
+
+Run `awk '/^--BEGIN MAKEFILE--$/{flag=1;next}/^--END MAKEFILE--$/{flag=0}flag' install.log > Makefile`
+to get an Makefile that does the work for you (after you configure it).
+
+Run the Makefile with make to build wine
+
+Then create and configure vcs_config.sup
+
+--BEGIN MAKEFILE--
+# By: Emil Hemdal <heemil@student.chalmers.se>
+# When: 2019-02-01
+
+sw              = wine
+compression     = tar.xz
+version         = 4.0
+tarball         = $(sw)-$(version).$(compression)
+url             = https://dl.winehq.org/wine/source/4.0/$(tarball)
+jobs            = -j8
+manpath         = share/man/man1
+
+destDir         = $(shell pwd)
+tmpDir          = /tmp/$(USER)-$(sw)
+buildDir        = $(tmpDir)/$(sw)-$(version)
+
+.PHONY: usage
+usage:
+        @echo Run \"make wine\" to make wine
+        @echo Beware that wine will be built in \"/tmp/$(USER)-$(sw)\" to save build time
+
+.PHONY: wine
+wine: $(buildDir)/64 $(buildDir)/32
+        # make 64 bit
+        cd $(buildDir)/64 && PKG_CONFIG_PATH=/usr/lib64/pkgconfig \
+                $(buildDir)/configure --prefix=$(destDir) --enable-win64
+        make $(jobs) -C $(buildDir)/64 -f $(buildDir)/64/Makefile
+        # make 32 bit
+        cd $(buildDir)/32 && PKG_CONFIG_PATH=/usr/lib/pkgconfig \
+                $(buildDir)/configure --prefix=$(destDir) --with-wine64=$(buildDir)/64
+        make $(jobs) -C $(buildDir)/32 -f $(buildDir)/32/Makefile
+        # Install 32 bit
+        make install -C $(buildDir)/32 -f $(buildDir)/32/Makefile
+        # Install 64 bit too
+        make install -C $(buildDir)/64 -f $(buildDir)/64/Makefile
+        # Fix man pages
+        ln -s wine.1 $(manpath)/wine-preloader.1
+        ln -s wine.1 $(manpath)/wine64.1
+        ln -s wine.1 $(manpath)/wine64-preloader.1
+        # Fix permissions
+        find $(destDir) -type d -exec chmod 775 {} \;
+        find $(destDir) -type f -exec chmod 664 {} \;
+        chmod 775 $(destDir)/bin/*
+
+dist:
+        mkdir $@
+
+dist/$(tarball): dist
+        curl --location -o $@ $(url)
+
+$(tmpDir):
+        mkdir -p $@
+
+$(buildDir): $(tmpDir) dist/$(tarball)
+        tar -xf dist/$(tarball) -C $(tmpDir)
+
+$(buildDir)/64: $(buildDir)
+        mkdir $@
+
+$(buildDir)/32: $(buildDir)
+        mkdir $@
+
+
+.PHONY: clean
+clean:
+        rm -Rf $(destDir)/dist
+        rm -Rf $(destDir)/lib
+        rm -Rf $(destDir)/lib64
+        rm -Rf $(destDir)/include
+        rm -Rf $(destDir)/share
+        rm -Rf $(destDir)/bin
+        rm -Rf $(buildDir)
+--END MAKEFILE--

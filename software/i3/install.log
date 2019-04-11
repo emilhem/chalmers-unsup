@@ -1,0 +1,83 @@
+By: Emil Hemdal <heemil@student.chalmers.se>
+When: 2019-01-30
+
+Run `awk '/^--BEGIN MAKEFILE--$/{flag=1;next}/^--END MAKEFILE--$/{flag=0}flag' install.log > Makefile`
+to get an Makefile that does the work for you (after you configure it).
+
+Run the Makefile with make to build i3
+
+Then create and configure vcs_config.sup
+
+--BEGIN MAKEFILE--
+# By: Emil Hemdal <heemil@student.chalmers.se>
+# When: 2019-01-30
+
+version         = 4.16.1
+sw              = i3
+compression     = .tar.bz2
+tarball         = $(sw)-$(version)$(compression)
+url             = https://i3wm.org/downloads/$(tarball)
+jobs            = -j8
+
+CFLAGS          =       $(shell lib__ev -I | xargs)
+CFLAGS          +=      $(shell lib__xcb-util -I | xargs)
+CFLAGS          +=      $(shell lib__xcb-cursor -I | xargs)
+CFLAGS          +=      $(shell lib__xcb-render-util -I | xargs)
+CFLAGS          +=      $(shell lib__xcb-image -I | xargs)
+CFLAGS          +=      $(shell lib__xcb-keysyms -I | xargs)
+CFLAGS          +=      $(shell lib__xcb-wm -I | xargs)
+CFLAGS          +=      $(shell lib__xcb-xrm -I | xargs)
+CFLAGS          +=      $(shell lib__xkbcommon -I | xargs)
+CFLAGS          +=      $(shell lib__yajl -I | xargs)
+LDFLAGS         =       -L$(shell lib__ev -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xcb-util -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xcb-cursor -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xcb-render-util -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xcb-image -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xcb-keysyms -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xcb-icccm -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xcb-xrm -R | xargs)
+LDFLAGS         +=      -L$(shell lib__xkbcommon -R | xargs)
+LDFLAGS         +=      -L$(shell lib__yajl -R | xargs)
+PKG_CONFIG_PATH =       $(shell lib__xcb-util -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__xcb-cursor -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__xcb-render-util -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__xcb-image -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__xcb-keysyms -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__xcb-icccm -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__xcb-xrm -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__xkbcommon -R | xargs)/pkgconfig
+PKG_CONFIG_PATH :=      $(PKG_CONFIG_PATH):$(shell lib__yajl -R | xargs)/../share/pkgconfig
+
+destDir         = $(shell pwd)
+buildDir        = $(destDir)/dist/$(sw)-$(version)
+
+.PHONY: i3
+i3: $(buildDir)/build
+        cd $(buildDir)/build && PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" $(buildDir)/configure --prefix=$(destDir) --enable-mans --enable-docs
+        make $(jobs) -C $(buildDir)/build -f $(buildDir)/build/Makefile
+        make install -C $(buildDir)/build -f $(buildDir)/build/Makefile
+        #find $(destDir) -type d -exec chmod 775 {} \;
+        #find $(destDir) -type f -exec chmod 664 {} \;
+        chmod 775 $(destDir)/bin/*
+
+dist:
+        mkdir $@
+
+dist/$(tarball): dist
+        curl --location -o $@ $(url)
+
+$(buildDir): dist/$(tarball)
+        tar -xf dist/$(tarball) -C dist
+
+$(buildDir)/build: $(buildDir)
+        mkdir $@
+
+.PHONY: clean
+clean:
+        rm -Rf $(destDir)/bin
+        rm -Rf $(destDir)/dist
+        rm -Rf $(destDir)/include
+        rm -Rf $(destDir)/share
+        rm -Rf $(destDir)/etc
+--END MAKEFILE--
